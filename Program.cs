@@ -15,10 +15,7 @@ namespace L44_passengerTrainConfigurator
             const int CommandExit = 6;
 
             Office office = new Office();
-
             int lenghtDelimeter = 75;
-            int numberMenu;
-
             char delimeter = '=';
             bool isOpen = true;
 
@@ -37,7 +34,7 @@ namespace L44_passengerTrainConfigurator
 
                 Console.Write("Выбирите действие: ");
 
-                if (int.TryParse(Console.ReadLine(), out numberMenu))
+                if (int.TryParse(Console.ReadLine(), out int numberMenu))
                 {
                     Console.Clear();
 
@@ -60,7 +57,6 @@ namespace L44_passengerTrainConfigurator
                             break;
 
                         case CommandShowAllVoyages:
-                            // Посмотреть весь список рейсов
                             office.ShowAllVoyage();
                             break;
 
@@ -115,19 +111,6 @@ namespace L44_passengerTrainConfigurator
 
         public int SoldTickets { get; private set; }
 
-        public List<Voyage> Voyages
-        {
-            get
-            {
-                List<Voyage> tempVoyages = new List<Voyage>();
-
-                foreach (var voyage in _voyages)
-                    tempVoyages.Add(voyage);
-
-                return tempVoyages;
-            }
-        }
-
         public void DeleteCurrentVoyage()
         {
             SoldTickets = 0;
@@ -146,10 +129,8 @@ namespace L44_passengerTrainConfigurator
             CurrentDirection = new Direction(sourceCityName, destinationCityName);
         }
 
-        public void SellTickets()
+        public void SellTickets(Random random)
         {
-            Random random = new Random();
-
             SoldTickets = random.Next(MaxTickets + 1);
         }
 
@@ -181,6 +162,42 @@ namespace L44_passengerTrainConfigurator
             }
         }
 
+        public void CreateVoyage()
+        {
+            if (CurrentDirection == null)
+            {
+                Console.WriteLine("Не создано напраления для рейса.");
+                return;
+            }
+
+            if (CurrentTrain == null)
+            {
+                Console.WriteLine("Не сформирован поезд для рейса.");
+                return;
+            }
+
+            _voyages.Add(new Voyage(CurrentDirection, CurrentTrain, _count++));
+        }
+
+        public void ShowAllVoyage()
+        {
+            foreach (Voyage voyage in _voyages)
+            {
+                Console.WriteLine($"Рейс №{voyage.Number}\tНаправление: {voyage.Direction.SourceCity} - {voyage.Direction.DestinationCity}" +
+                                  $"\tКоличество вагонов: {voyage.Train.CountCarriages}");
+
+                for (int i = 0; i < voyage.Train.CountCarriages; i++)
+                {
+                    Console.Write($"Номер вагона: {i + 1} - Тип: {voyage.Train.Carriages[i].Type} - Вместимость: {(int)voyage.Train.Carriages[i].Type}\t");
+
+                    if (((i + 1) % 3) == 0)
+                        Console.WriteLine();
+                }
+
+                Console.WriteLine();
+            }
+        }
+
         private void FillTrain(int countPassengers, CarriageType carriage, Train train)
         {
 
@@ -204,51 +221,15 @@ namespace L44_passengerTrainConfigurator
                 train.AddCarriage(new Carriage(carriage));
             }
         }
-
-        public void CreateVoyage()
-        {
-            if (CurrentDirection == null)
-            {
-                Console.WriteLine("Не создано напраления для рейса.");
-                return;
-            }
-
-            if (CurrentTrain == null)
-            {
-                Console.WriteLine("Не сформирован поезд для рейса.");
-                return;
-            }
-
-            _voyages.Add(new Voyage(CurrentDirection, CurrentTrain, _count++));
-        }
-
-        public void ShowAllVoyage()
-        {
-            foreach (var voyage in _voyages)
-            {
-                Console.WriteLine($"Рейс №{voyage.Number}\tНаправление: {voyage.Direction.SourceCity} - {voyage.Direction.DestinationCity}" +
-                                  $"\tКоличество вагонов: {voyage.Train.CountCarriages}");
-
-                for (int i = 0; i < voyage.Train.CountCarriages; i++)
-                {
-                    Console.Write($"Номер вагона: {i + 1} - Тип: {voyage.Train.Carriages[i].Type} - Вместимость: {(int)voyage.Train.Carriages[i].Type}\t");
-
-                    if (((i + 1) % 3) == 0)
-                        Console.WriteLine();
-                }
-
-                Console.WriteLine();
-            }
-        }
     }
 
     class Voyage
     {
         public Voyage(Direction direction, Train train, int number)
         {
-            this.Direction = direction;
-            this.Train = train;
-            this.Number = number;
+            Direction = direction;
+            Train = train;
+            Number = number;
         }
 
         public Train Train { get; private set; }
@@ -262,8 +243,8 @@ namespace L44_passengerTrainConfigurator
     {
         public Direction(string source, string destination)
         {
-            this.SourceCity = source;
-            this.DestinationCity = destination;
+            SourceCity = source;
+            DestinationCity = destination;
         }
 
         public string SourceCity { get; private set; }
@@ -283,22 +264,22 @@ namespace L44_passengerTrainConfigurator
             }
         }
 
-        public void AddCarriage(Carriage carriage)
-        {
-            _carriages.Add(carriage);
-        }
-
         public List<Carriage> Carriages
         {
             get
             {
                 List<Carriage> tempCarriages = new List<Carriage>();
 
-                foreach (var carriage in _carriages)
+                foreach (Carriage carriage in _carriages)
                     tempCarriages.Add(carriage);
 
                 return tempCarriages;
             }
+        }
+
+        public void AddCarriage(Carriage carriage)
+        {
+            _carriages.Add(carriage);
         }
     }
 
@@ -306,7 +287,7 @@ namespace L44_passengerTrainConfigurator
     {
         public Carriage(CarriageType type)
         {
-            this.Type = type;
+            Type = type;
         }
 
         public CarriageType Type { get; private set; }
