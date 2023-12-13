@@ -14,6 +14,7 @@ namespace L44_passengerTrainConfigurator
             const int CommandShowAllVoyages = 5;
             const int CommandExit = 6;
 
+            Random random = new Random();
             Office office = new Office();
             int lenghtDelimeter = 75;
             char delimeter = '=';
@@ -45,7 +46,7 @@ namespace L44_passengerTrainConfigurator
                             break;
 
                         case CommandSellTickets:
-                            office.SellTickets();
+                            office.SellTickets(random);
                             break;
 
                         case CommandFormTrain:
@@ -53,7 +54,7 @@ namespace L44_passengerTrainConfigurator
                             break;
 
                         case CommandSendTrain:
-                            SendTrain(office);
+                            office.SendTrain();
                             break;
 
                         case CommandShowAllVoyages:
@@ -65,28 +66,25 @@ namespace L44_passengerTrainConfigurator
                             continue;
 
                         default:
-                            ShowError();
+                            Error.Show();
                             break;
                     }
                 }
                 else
                 {
-                    ShowError();
+                    Error.Show();
                 }
 
                 Console.ReadKey(true);
             }
         }
+    }
 
-        static void ShowError()
+    class Error
+    {
+        public static void Show()
         {
             Console.WriteLine("\nВы ввели некорректное значение.");
-        }
-
-        static void SendTrain(Office office)
-        {
-            office.CreateVoyage();
-            office.DeleteCurrentVoyage();
         }
     }
 
@@ -196,6 +194,12 @@ namespace L44_passengerTrainConfigurator
 
                 Console.WriteLine();
             }
+        }
+
+        public void SendTrain()
+        {
+            CreateVoyage();
+            DeleteCurrentVoyage();
         }
 
         private void FillTrain(int countPassengers, CarriageType carriage, Train train)
