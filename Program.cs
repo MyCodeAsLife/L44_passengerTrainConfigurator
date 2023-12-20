@@ -171,18 +171,6 @@ namespace L44_passengerTrainConfigurator
 
         private void CreateVoyage()
         {
-            if (_currentDirection == null)
-            {
-                Console.WriteLine("Не создано направление для рейса.");
-                return;
-            }
-
-            if (_currentTrain == null)
-            {
-                Console.WriteLine("Не сформирован поезд для рейса.");
-                return;
-            }
-
             _voyages.Add(new Voyage(_currentDirection, _currentTrain, _count++));
         }
 
@@ -214,8 +202,15 @@ namespace L44_passengerTrainConfigurator
 
         private void SendTrain()
         {
-            CreateVoyage();
-            DeleteCurrentVoyage();
+            if (_currentTrain == null)
+            {
+                Console.WriteLine("Не сформирован поезд для рейса.");
+            }
+            else
+            {
+                CreateVoyage();
+                DeleteCurrentVoyage();
+            }
         }
 
         private void FormTrain()
@@ -243,15 +238,15 @@ namespace L44_passengerTrainConfigurator
             CarriageType carriage = SelectCarriage(this._soldTickets);
             int numberCarriages = _soldTickets / (int)carriage;
             int restPeople = _soldTickets % (int)carriage;
-            Train train = new Train();
+            _currentTrain = new Train();
 
             for (int i = 0; i < numberCarriages; i++)
-                train.AddCarriage(new Carriage(carriage));
+                _currentTrain.AddCarriage(new Carriage(carriage));
 
             if (restPeople > 0)
             {
                 carriage = SelectCarriage(restPeople);
-                train.AddCarriage(new Carriage(carriage));
+                _currentTrain.AddCarriage(new Carriage(carriage));
             }
         }
     }
