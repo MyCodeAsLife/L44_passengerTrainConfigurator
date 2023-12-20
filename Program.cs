@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.SqlServer.Server;
+using System;
 using System.Collections.Generic;
 
 namespace L44_passengerTrainConfigurator
@@ -7,32 +8,69 @@ namespace L44_passengerTrainConfigurator
     {
         static void Main(string[] args)
         {
-            const int CommandCreateDirection = 1;
-            const int CommandSellTickets = 2;
-            const int CommandFormTrain = 3;
-            const int CommandSendTrain = 4;
-            const int CommandShowAllVoyages = 5;
-            const int CommandExit = 6;
-
             Random random = new Random();
-            Office office = new Office();
-            int lenghtDelimeter = 75;
-            char delimeter = '=';
+            Office office = new Office(random);
+
+            office.Run();
+        }
+    }
+
+    class Error
+    {
+        public static void Show()
+        {
+            Console.WriteLine("\nВы ввели некорректное значение.");
+        }
+    }
+
+    class FormatOutput
+    {
+        static FormatOutput()
+        {
+            DelimiterSymbol = '=';
+            DelimiterLenght = 75;
+        }
+
+        public static char DelimiterSymbol { get; private set; }
+
+        public static int DelimiterLenght { get; private set; }
+    }
+
+    class Office
+    {
+        private const int CommandCreateDirection = 1;
+        private const int CommandSellTickets = 2;
+        private const int CommandFormTrain = 3;
+        private const int CommandSendTrain = 4;
+        private const int CommandShowAllVoyages = 5;
+        private const int CommandExit = 6;
+
+        private int _count = 0;
+        private int _maxTickets;
+        private int _soldTickets;
+
+        private Random _random;
+        private List<Voyage> _voyages = new List<Voyage>();
+        private Direction _currentDirection;
+        private Train _currentTrain;
+
+        public Office(Random random)
+        {
+            _random = random;
+            _maxTickets = 300;
+            _soldTickets = 0;
+            _currentTrain = null;
+            _currentDirection = null;
+        }
+
+        public void Run()
+        {
             bool isOpen = true;
 
             while (isOpen)
             {
-                Console.Clear();
-                Console.WriteLine($"{CommandCreateDirection} - Создать направление.\n{CommandSellTickets} - Продать билеты.\n{CommandFormTrain}" +
-                                  $" - Сформировать поезд.\n{CommandSendTrain} - Отправить поезд.\n{CommandShowAllVoyages}" +
-                                  $" - Показать все маршруты.\n{CommandExit} - Выйти из программы.");
-                Console.WriteLine(new string(delimeter, lenghtDelimeter));
-
-                Console.WriteLine($"Информция о формируемом рейсе:\nНаправление: {(office.CurrentDirection != null ? office.CurrentDirection.SourceCity : null)}" +
-                                  $" - {(office.CurrentDirection != null ? office.CurrentDirection.DestinationCity : null)}\tБилетов продано: {office.SoldTickets}" +
-                                  $"\tПоезд сформирован: {office.CurrentTrain != null}");
-                Console.WriteLine(new string(delimeter, lenghtDelimeter));
-
+                ShowMenu();
+                ShowCurrentVoyageInfo();
                 Console.Write("Выбирите действие: ");
 
                 if (int.TryParse(Console.ReadLine(), out int numberMenu))
@@ -42,23 +80,23 @@ namespace L44_passengerTrainConfigurator
                     switch (numberMenu)
                     {
                         case CommandCreateDirection:
-                            office.CreateDirection();
+                            CreateDirection();
                             break;
 
                         case CommandSellTickets:
-                            office.SellTickets(random);
+                            SellTickets();
                             break;
 
                         case CommandFormTrain:
-                            office.FormTrain();
+                            FormTrain();
                             break;
 
                         case CommandSendTrain:
-                            office.SendTrain();
+                            SendTrain();
                             break;
 
                         case CommandShowAllVoyages:
-                            office.ShowAllVoyage();
+                            ShowAllVoyage();
                             break;
 
                         case CommandExit:
@@ -78,45 +116,36 @@ namespace L44_passengerTrainConfigurator
                 Console.ReadKey(true);
             }
         }
-    }
 
-    class Error
-    {
-        public static void Show()
+        private void ShowMenu()
         {
-            Console.WriteLine("\nВы ввели некорректное значение.");
-        }
-    }
-
-    class Office
-    {
-        private List<Voyage> _voyages = new List<Voyage>();
-        private static int _count = 0;
-
-        public Office()
-        {
-            MaxTickets = 300;
-            SoldTickets = 0;
-            CurrentTrain = null;
-            CurrentDirection = null;
+            Console.Clear();
+            Console.WriteLine($"{CommandCreateDirection} - Создать направление.\n{CommandSellTickets} - Продать билеты.\n{CommandFormTrain}" +
+                              $" - Сформировать поезд.\n{CommandSendTrain} - Отправить поезд.\n{CommandShowAllVoyages}" +
+                              $" - Показать все маршруты.\n{CommandExit} - Выйти из программы.");
+            Console.WriteLine(new string(FormatOutput.DelimiterSymbol, FormatOutput.DelimiterLenght));
         }
 
-        public Direction CurrentDirection { get; private set; }
-
-        public Train CurrentTrain { get; private set; }
-
-        public int MaxTickets { get; private set; }
-
-        public int SoldTickets { get; private set; }
-
-        public void DeleteCurrentVoyage()
+        private void ShowCurrentVoyageInfo()
         {
-            SoldTickets = 0;
-            CurrentDirection = null;
-            CurrentTrain = null;
+            string sorceCity = (_currentDirection == null ? null : _currentDirection.SourceCity);
+            string destinationCity = (_currentDirection != null ? _currentDirection.DestinationCity : null);
+            bool isTrainFormed = (_currentTrain != null);
+
+            Console.WriteLine($"Информция о формируемом рейсе:\nНаправление: {sorceCity}" +
+                              $" - {destinationCity}\tБилетов продано: {_soldTickets}" +
+                              $"\tПоезд сформирован: {isTrainFormed}");
+            Console.WriteLine(new string(FormatOutput.DelimiterSymbol, FormatOutput.DelimiterLenght));
         }
 
-        public void CreateDirection()
+        private void DeleteCurrentVoyage()
+        {
+            _soldTickets = 0;
+            _currentDirection = null;
+            _currentTrain = null;
+        }
+
+        private void CreateDirection()
         {
             Console.Write("Введите город отправления: ");
             string sourceCityName = Console.ReadLine();
@@ -124,104 +153,104 @@ namespace L44_passengerTrainConfigurator
             Console.Write("Введите город назначения: ");
             string destinationCityName = Console.ReadLine();
 
-            CurrentDirection = new Direction(sourceCityName, destinationCityName);
+            _currentDirection = new Direction(sourceCityName, destinationCityName);
         }
 
-        public void SellTickets(Random random)
+        private void SellTickets()
         {
-            SoldTickets = random.Next(MaxTickets + 1);
-        }
-
-        public void FormTrain()
-        {
-            CurrentTrain = new Train();
-
-            if (SoldTickets < 1)
+            if (_currentDirection == null)
             {
-                Console.WriteLine("Нет пассажиров для формирования поезда.");
-                return;
-            }
-
-            if (SoldTickets >= (int)CarriageType.doubleEconomClass)
-            {
-                FillTrain(SoldTickets, CarriageType.doubleEconomClass, CurrentTrain);
-            }
-            else if (SoldTickets >= (int)CarriageType.compartment)
-            {
-                FillTrain(SoldTickets, CarriageType.compartment, CurrentTrain);
-            }
-            else if (SoldTickets >= (int)CarriageType.economClass)
-            {
-                FillTrain(SoldTickets, CarriageType.economClass, CurrentTrain);
+                Console.WriteLine("Направление еще не создано. Создайте направление.");
             }
             else
             {
-                FillTrain(SoldTickets, CarriageType.wagonLit, CurrentTrain);
+                _soldTickets = _random.Next(_maxTickets + 1);
+                Console.WriteLine($"Билетов удалось продать: {_soldTickets}.");
             }
         }
 
-        public void CreateVoyage()
+        private void CreateVoyage()
         {
-            if (CurrentDirection == null)
+            if (_currentDirection == null)
             {
-                Console.WriteLine("Не создано напраления для рейса.");
+                Console.WriteLine("Не создано направление для рейса.");
                 return;
             }
 
-            if (CurrentTrain == null)
+            if (_currentTrain == null)
             {
                 Console.WriteLine("Не сформирован поезд для рейса.");
                 return;
             }
 
-            _voyages.Add(new Voyage(CurrentDirection, CurrentTrain, _count++));
+            _voyages.Add(new Voyage(_currentDirection, _currentTrain, _count++));
         }
 
-        public void ShowAllVoyage()
+        private void ShowAllVoyage()
         {
-            foreach (Voyage voyage in _voyages)
+            if (_voyages.Count > 0)
             {
-                Console.WriteLine($"Рейс №{voyage.Number}\tНаправление: {voyage.Direction.SourceCity} - {voyage.Direction.DestinationCity}" +
-                                  $"\tКоличество вагонов: {voyage.Train.CountCarriages}");
-
-                for (int i = 0; i < voyage.Train.CountCarriages; i++)
+                foreach (Voyage voyage in _voyages)
                 {
-                    Console.Write($"Номер вагона: {i + 1} - Тип: {voyage.Train.Carriages[i].Type} - Вместимость: {(int)voyage.Train.Carriages[i].Type}\t");
+                    Console.WriteLine($"Рейс №{voyage.Number}\tНаправление: {voyage.Direction.SourceCity} - {voyage.Direction.DestinationCity}" +
+                                      $"\tКоличество вагонов: {voyage.Train.CountCarriages}");
 
-                    if (((i + 1) % 3) == 0)
-                        Console.WriteLine();
+                    for (int i = 0; i < voyage.Train.CountCarriages; i++)
+                    {
+                        Console.Write($"Номер вагона: {i + 1} - Тип: {voyage.Train.Carriages[i].Type} - Вместимость: {(int)voyage.Train.Carriages[i].Type}\t");
+
+                        if (((i + 1) % 3) == 0)
+                            Console.WriteLine();
+                    }
+
+                    Console.WriteLine();
                 }
-
-                Console.WriteLine();
+            }
+            else
+            {
+                Console.WriteLine("Пока нет маршрутов.");
             }
         }
 
-        public void SendTrain()
+        private void SendTrain()
         {
             CreateVoyage();
             DeleteCurrentVoyage();
         }
 
-        private void FillTrain(int countPassengers, CarriageType carriage, Train train)
+        private void FormTrain()
         {
+            if (_soldTickets > 0)
+                FillTrain();
+            else
+                Console.WriteLine("Нет пассажиров для формирования поезда.");
+        }
 
-            int countCarriage = countPassengers / (int)carriage;
-            int restPeople = countPassengers % (int)carriage;
+        private CarriageType SelectCarriage(int numberPassengers)
+        {
+            if (numberPassengers >= (int)CarriageType.DoubleEconomClass)
+                return CarriageType.DoubleEconomClass;
+            else if (numberPassengers >= (int)CarriageType.Compartment)
+                return CarriageType.Compartment;
+            else if (numberPassengers >= (int)CarriageType.EconomClass)
+                return CarriageType.EconomClass;
+            else
+                return CarriageType.WagonLit;
+        }
 
-            for (int i = 0; i < countCarriage; i++)
+        private void FillTrain()
+        {
+            CarriageType carriage = SelectCarriage(this._soldTickets);
+            int numberCarriages = _soldTickets / (int)carriage;
+            int restPeople = _soldTickets % (int)carriage;
+            Train train = new Train();
+
+            for (int i = 0; i < numberCarriages; i++)
                 train.AddCarriage(new Carriage(carriage));
 
             if (restPeople > 0)
             {
-                if (restPeople <= (int)CarriageType.wagonLit)
-                    carriage = CarriageType.wagonLit;
-                else if (restPeople <= (int)CarriageType.economClass)
-                    carriage = CarriageType.economClass;
-                else if (restPeople <= (int)CarriageType.compartment)
-                    carriage = CarriageType.compartment;
-                else
-                    carriage = CarriageType.doubleEconomClass;
-
+                carriage = SelectCarriage(restPeople);
                 train.AddCarriage(new Carriage(carriage));
             }
         }
@@ -299,9 +328,9 @@ namespace L44_passengerTrainConfigurator
 
     enum CarriageType
     {
-        doubleEconomClass = 64,
-        compartment = 54,
-        economClass = 36,
-        wagonLit = 18,
+        DoubleEconomClass = 64,
+        Compartment = 54,
+        EconomClass = 36,
+        WagonLit = 18,
     }
 }
