@@ -21,7 +21,7 @@ namespace L44_passengerTrainConfigurator
         }
     }
 
-    class FormatOutput
+    static class FormatOutput
     {
         static FormatOutput()
         {
