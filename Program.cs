@@ -13,7 +13,7 @@ namespace L44_passengerTrainConfigurator
         }
     }
 
-    class Error
+    static class Error
     {
         public static void Show()
         {
