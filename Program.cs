@@ -7,8 +7,7 @@ namespace L44_passengerTrainConfigurator
     {
         static void Main(string[] args)
         {
-            Random random = new Random();
-            Office office = new Office(random);
+            Office office = new Office();
 
             office.Run();
         }
@@ -31,7 +30,6 @@ namespace L44_passengerTrainConfigurator
         }
 
         public static char DelimiterSymbol { get; private set; }
-
         public static int DelimiterLenght { get; private set; }
     }
 
@@ -53,9 +51,9 @@ namespace L44_passengerTrainConfigurator
         private Direction _currentDirection;
         private Train _currentTrain;
 
-        public Office(Random random)
+        public Office()
         {
-            _random = random;
+            _random = new Random();
             _maxTickets = 300;
             _soldTickets = 0;
             _currentTrain = null;
@@ -234,7 +232,7 @@ namespace L44_passengerTrainConfigurator
 
         private void FillTrain()
         {
-            CarriageType carriage = SelectCarriage(this._soldTickets);
+            CarriageType carriage = SelectCarriage(_soldTickets);
             int numberCarriages = _soldTickets / (int)carriage;
             int restPeople = _soldTickets % (int)carriage;
             _currentTrain = new Train();
@@ -260,9 +258,7 @@ namespace L44_passengerTrainConfigurator
         }
 
         public Train Train { get; private set; }
-
         public int Number { get; private set; }
-
         public Direction Direction { get; private set; }
     }
 
@@ -275,7 +271,6 @@ namespace L44_passengerTrainConfigurator
         }
 
         public string SourceCity { get; private set; }
-
         public string DestinationCity { get; private set; }
     }
 
@@ -320,7 +315,7 @@ namespace L44_passengerTrainConfigurator
         public CarriageType Type { get; private set; }
     }
 
-    enum CarriageType
+    internal enum CarriageType
     {
         DoubleEconomClass = 64,
         Compartment = 54,
