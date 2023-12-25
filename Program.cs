@@ -13,26 +13,6 @@ namespace L44_passengerTrainConfigurator
         }
     }
 
-    static class Error
-    {
-        public static void Show()
-        {
-            Console.WriteLine("\nВы ввели некорректное значение.");
-        }
-    }
-
-    static class FormatOutput
-    {
-        static FormatOutput()
-        {
-            DelimiterSymbol = '=';
-            DelimiterLenght = 75;
-        }
-
-        public static char DelimiterSymbol { get; private set; }
-        public static int DelimiterLenght { get; private set; }
-    }
-
     class Office
     {
         private const int CommandCreateDirection = 1;
@@ -144,13 +124,20 @@ namespace L44_passengerTrainConfigurator
 
         private void CreateDirection()
         {
-            Console.Write("Введите город отправления: ");
-            string sourceCityName = Console.ReadLine();
+            if (_soldTickets > 0)
+            {
+                Console.WriteLine("После продажи билетов, направление маршрута изменить нельзя.");
+            }
+            else
+            {
+                Console.Write("Введите город отправления: ");
+                string sourceCityName = Console.ReadLine();
 
-            Console.Write("Введите город назначения: ");
-            string destinationCityName = Console.ReadLine();
+                Console.Write("Введите город назначения: ");
+                string destinationCityName = Console.ReadLine();
 
-            _currentDirection = new Direction(sourceCityName, destinationCityName);
+                _currentDirection = new Direction(sourceCityName, destinationCityName);
+            }
         }
 
         private void SellTickets()
@@ -181,12 +168,7 @@ namespace L44_passengerTrainConfigurator
                                       $"\tКоличество вагонов: {voyage.Train.CountCarriages}");
 
                     for (int i = 0; i < voyage.Train.CountCarriages; i++)
-                    {
-                        Console.Write($"Номер вагона: {i + 1} - Тип: {voyage.Train.Carriages[i].Type} - Вместимость: {(int)voyage.Train.Carriages[i].Type}\t");
-
-                        if (((i + 1) % 3) == 0)
-                            Console.WriteLine();
-                    }
+                        Console.WriteLine($"Номер вагона: {i + 1} - Тип: {voyage.Train.Carriages[i].Type} - Вместимость: {(int)voyage.Train.Carriages[i].Type}\t");
 
                     Console.WriteLine();
                 }
@@ -245,6 +227,26 @@ namespace L44_passengerTrainConfigurator
                 carriage = SelectCarriage(restPeople);
                 _currentTrain.AddCarriage(new Carriage(carriage));
             }
+        }
+
+        internal class Error
+        {
+            public static void Show()
+            {
+                Console.WriteLine("\nВы ввели некорректное значение.");
+            }
+        }
+
+        internal class FormatOutput
+        {
+            static FormatOutput()
+            {
+                DelimiterSymbol = '=';
+                DelimiterLenght = 75;
+            }
+
+            public static char DelimiterSymbol { get; private set; }
+            public static int DelimiterLenght { get; private set; }
         }
     }
 
