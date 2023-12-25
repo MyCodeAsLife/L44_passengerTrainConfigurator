@@ -48,7 +48,7 @@ namespace L44_passengerTrainConfigurator
             {
                 ShowMenu();
                 ShowCurrentVoyageInfo();
-                Console.Write("Выбирите действие: ");
+                Console.Write("Выберите действие: ");
 
                 if (int.TryParse(Console.ReadLine(), out int numberMenu))
                 {
@@ -105,8 +105,8 @@ namespace L44_passengerTrainConfigurator
 
         private void ShowCurrentVoyageInfo()
         {
-            string sorceCity = (_currentDirection == null ? null : _currentDirection.SourceCity);
-            string destinationCity = (_currentDirection != null ? _currentDirection.DestinationCity : null);
+            string sorceCity = (_currentDirection == null ? string.Empty : _currentDirection.SourceCity);
+            string destinationCity = _currentDirection == null ? string.Empty : _currentDirection.DestinationCity;
             bool isTrainFormed = (_currentTrain != null);
 
             Console.WriteLine($"Информция о формируемом рейсе:\nНаправление: {sorceCity}" +
@@ -165,9 +165,9 @@ namespace L44_passengerTrainConfigurator
                 foreach (Voyage voyage in _voyages)
                 {
                     Console.WriteLine($"Рейс №{voyage.Number}\tНаправление: {voyage.Direction.SourceCity} - {voyage.Direction.DestinationCity}" +
-                                      $"\tКоличество вагонов: {voyage.Train.CountCarriages}");
+                                      $"\tКоличество вагонов: {voyage.Train.CarriagesCount}");
 
-                    for (int i = 0; i < voyage.Train.CountCarriages; i++)
+                    for (int i = 0; i < voyage.Train.CarriagesCount; i++)
                         Console.WriteLine($"Номер вагона: {i + 1} - Тип: {voyage.Train.Carriages[i].Type} - Вместимость: {(int)voyage.Train.Carriages[i].Type}\t");
 
                     Console.WriteLine();
@@ -280,26 +280,8 @@ namespace L44_passengerTrainConfigurator
     {
         private List<Carriage> _carriages = new List<Carriage>();
 
-        public int CountCarriages
-        {
-            get
-            {
-                return _carriages.Count;
-            }
-        }
-
-        public List<Carriage> Carriages
-        {
-            get
-            {
-                List<Carriage> tempCarriages = new List<Carriage>();
-
-                foreach (Carriage carriage in _carriages)
-                    tempCarriages.Add(carriage);
-
-                return tempCarriages;
-            }
-        }
+        public int CarriagesCount => _carriages.Count;
+        public IReadOnlyList<Carriage> Carriages => _carriages;
 
         public void AddCarriage(Carriage carriage)
         {
